@@ -76,10 +76,10 @@ bool initRadio() {
 	if (rf95.init()) {
 		delay(100);
 
-		digitalWrite(LED_RECEIVE, LOW);
-		digitalWrite(LED_TRANSMIT, LOW);
-		digitalWrite(LED_ERROR, LOW);
-		digitalWrite(LED_HEARTBEAT, LOW);
+		digitalWrite(LED_PIN_RECEIVE, LOW);
+		digitalWrite(LED_PIN_TRANSMIT, LOW);
+		digitalWrite(LED_PIN_ERROR, LOW);
+		digitalWrite(LED_PIN_HEARTBEAT, LOW);
 
     const RH_RF95::ModemConfig cfg = RF95_MODEM_CONFIG;
     rf95.setModemRegisters(&cfg);
@@ -106,19 +106,19 @@ bool resetRadio() {
 }
 
 // LoRa device can have a packetsize of 254 bytes
-kiss k(254, peekRadio, getRadio, putRadio, peekSerial, getSerial, putSerial, resetRadio, LED_RECEIVE, LED_TRANSMIT, LED_ERROR);
+kiss k(254, peekRadio, getRadio, putRadio, peekSerial, getSerial, putSerial, resetRadio, LED_PIN_RECEIVE, LED_PIN_TRANSMIT, LED_PIN_ERROR);
 
 void setup() {
 	Serial.begin(SERIAL_BAUDRATE);
 
-	pinMode(LED_RECEIVE, OUTPUT);
-	digitalWrite(LED_RECEIVE, HIGH);
-	pinMode(LED_TRANSMIT, OUTPUT);
-	digitalWrite(LED_TRANSMIT, HIGH);
-	pinMode(LED_ERROR, OUTPUT);
-	digitalWrite(LED_ERROR, HIGH);
-	pinMode(LED_HEARTBEAT, OUTPUT);
-	digitalWrite(LED_HEARTBEAT, HIGH);
+	pinMode(LED_PIN_RECEIVE, OUTPUT);
+	digitalWrite(LED_PIN_RECEIVE, HIGH);
+	pinMode(LED_PIN_TRANSMIT, OUTPUT);
+	digitalWrite(LED_PIN_TRANSMIT, HIGH);
+	pinMode(LED_PIN_ERROR, OUTPUT);
+	digitalWrite(LED_PIN_ERROR, HIGH);
+	pinMode(LED_PIN_HEARTBEAT, OUTPUT);
+	digitalWrite(LED_PIN_HEARTBEAT, HIGH);
 
 	pinMode(RF95_PIN_RESET, OUTPUT);
 	digitalWrite(RF95_PIN_RESET, HIGH);
@@ -139,7 +139,7 @@ void loop() {
 
 	if (now - pHB >= HEARTBEAT_INTERVAL) {
 		static bool state = true;
-		digitalWrite(LED_HEARTBEAT, state ? HIGH : LOW);
+		digitalWrite(LED_PIN_HEARTBEAT, state ? HIGH : LOW);
 		state = !state;
 		pHB = now;
 	}
@@ -152,9 +152,9 @@ void loop() {
 
 		if (!resetRadio()) {
 			for(byte i=0; i<3; i++) {
-				digitalWrite(LED_ERROR, HIGH);
+				digitalWrite(LED_PIN_ERROR, HIGH);
 				delay(250);
-				digitalWrite(LED_ERROR, LOW);
+				digitalWrite(LED_PIN_ERROR, LOW);
 				delay(250);
 			}
 		}

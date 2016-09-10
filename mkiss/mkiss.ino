@@ -18,17 +18,10 @@
  */
 
 #include "kiss.h"
+#include "configuration.h"
 
 #include <SPI.h>
 #include <RH_RF95.h> // LoRa device
-
-// as debugging via serial is not possible (it is used for the kiss
-// protocol), I use a couple of LEDs
-#define pinLedError 3
-#define pinLedRecv 4
-#define pinLedSend 5
-#define pinLedHB 6
-#define pinReset 7
 
 // this is an example implementation using a "RadioHead"-driver for
 // RF95 radio (a LoRa device).
@@ -83,32 +76,20 @@ bool initRadio() {
 	if (rf95.init()) {
 		delay(100);
 
-		digitalWrite(pinLedRecv, LOW);
-		digitalWrite(pinLedSend, LOW);
-		digitalWrite(pinLedError, LOW);
-		digitalWrite(pinLedHB, LOW);
+		digitalWrite(LED_RECEIVE, LOW);
+		digitalWrite(LED_TRANSMIT, LOW);
+		digitalWrite(LED_ERROR, LOW);
+		digitalWrite(LED_HEARTBEAT, LOW);
 
-#if 1
-                const RH_RF95::ModemConfig cfg = {
-                                // Register 0x1D:
-                                // BW         CR      0=explicit
-                                (8 << 4) | (4 << 1) | (0 << 0),
-                                // Register 0x1E:
-                                // SF       CRC enable
-                                (10 << 4) | (1 << 2),
-                                // Register 0x26:
-                                // bit3 = LowDataRateOptimization
-                                (0 << 3)
-                        };
-                rf95.setModemRegisters(&cfg);
-                rf95.setFrequency(869.850);
-                rf95.setPreambleLength(8);
-#else
-                rf95.setFrequency(869.525);
-                rf95.setModemConfig(RH_RF95::Bw125Cr48Sf4096);
-                rf95.setTxPower(13); // radiohead default is 13
+    const RH_RF95::ModemConfig cfg = RF95_MODEM_CONFIG;
+    rf95.setModemRegisters(&cfg);
+    rf95.setFrequency(RF95_FREQUENCY);
+#ifdef RF95_POWER
+    rf95.setTxPower(RF95_POWER); // radiohead default is 13
 #endif
-
+#ifdef RF95_PREAMBLE_LENGTH
+    rf95.setPreambleLength(8);
+#endif
 		return true;
 	}
 
@@ -116,32 +97,31 @@ bool initRadio() {
 }
 
 bool resetRadio() {
-	digitalWrite(pinReset, LOW);
+	digitalWrite(RF95_PIN_RESET, LOW);
 	delay(1); // at least 100us, this is 1000us
-	digitalWrite(pinReset, HIGH);
+	digitalWrite(RF95_PIN_RESET, HIGH);
 	delay(5 + 1); // 5ms is required
 
 	return initRadio();
 }
 
 // LoRa device can have a packetsize of 254 bytes
-kiss k(254, peekRadio, getRadio, putRadio, peekSerial, getSerial, putSerial, resetRadio, pinLedRecv, pinLedSend, pinLedError);
+kiss k(254, peekRadio, getRadio, putRadio, peekSerial, getSerial, putSerial, resetRadio, LED_RECEIVE, LED_TRANSMIT, LED_ERROR);
 
 void setup() {
-	// the arduino talks with 9600bps to the linux system
-	Serial.begin(9600);
+	Serial.begin(SERIAL_BAUDRATE);
 
-	pinMode(pinLedRecv, OUTPUT);
-	digitalWrite(pinLedRecv, HIGH);
-	pinMode(pinLedSend, OUTPUT);
-	digitalWrite(pinLedSend, HIGH);
-	pinMode(pinLedError, OUTPUT);
-	digitalWrite(pinLedError, HIGH);
-	pinMode(pinLedHB, OUTPUT);
-	digitalWrite(pinLedHB, HIGH);
+	pinMode(LED_RECEIVE, OUTPUT);
+	digitalWrite(LED_RECEIVE, HIGH);
+	pinMode(LED_TRANSMIT, OUTPUT);
+	digitalWrite(LED_TRANSMIT, HIGH);
+	pinMode(LED_ERROR, OUTPUT);
+	digitalWrite(LED_ERROR, HIGH);
+	pinMode(LED_HEARTBEAT, OUTPUT);
+	digitalWrite(LED_HEARTBEAT, HIGH);
 
-	pinMode(pinReset, OUTPUT);
-	digitalWrite(pinReset, HIGH);
+	pinMode(RF95_PIN_RESET, OUTPUT);
+	digitalWrite(RF95_PIN_RESET, HIGH);
 
 	k.begin();
 
@@ -157,27 +137,29 @@ void loop() {
 	const unsigned long int now = millis();
 	static unsigned long int pHB = 0;
 
-	if (now - pHB >= 500) {
+	if (now - pHB >= HEARTBEAT_INTERVAL) {
 		static bool state = true;
-		digitalWrite(pinLedHB, state ? HIGH : LOW);
+		digitalWrite(LED_HEARTBEAT, state ? HIGH : LOW);
 		state = !state;
 		pHB = now;
 	}
 
+#ifdef RESET_INTERVAL
 	static unsigned long int lastReset = 0;
-	const unsigned long int resetInterval = 301000; // every 5 min
+	const unsigned long int resetInterval = RESET_INTERVAL;
 	if (now - lastReset >= resetInterval) {
 		k.debug("Reset radio");
 
 		if (!resetRadio()) {
 			for(byte i=0; i<3; i++) {
-				digitalWrite(pinLedError, HIGH);
+				digitalWrite(LED_ERROR, HIGH);
 				delay(250);
-				digitalWrite(pinLedError, LOW);
+				digitalWrite(LED_ERROR, LOW);
 				delay(250);
 			}
 		}
 
 		lastReset = now;
 	}
+#endif
 }

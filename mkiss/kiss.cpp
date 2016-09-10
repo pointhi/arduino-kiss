@@ -1,5 +1,21 @@
-// this software is (C) 2016 by folkert@vanheusden.com
-// AGPL v3.0
+/*
+ *  This file is part of arduino-kiss.
+ *
+ *  arduino-kiss is free software: you can redistribute it and/or
+ *  modify it under the terms of the GNU Affero General Public License
+ *  as published by the Free Software Foundation, in version 3 of
+ *  the License.
+ *
+ *  arduino-kiss is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with arduino-kiss.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *  (C) 2016 by folkert@vanheusden.com
+ */
 
 #ifdef UNITTEST
 #include <string.h>

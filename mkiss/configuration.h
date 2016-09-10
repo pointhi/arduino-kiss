@@ -20,10 +20,10 @@
 /*
  * Some generic Configuration for arduino-kiss
  */
-#define LED_PIN_ERROR             A6
-#define LED_PIN_RECEIVE           A4
-#define LED_PIN_TRANSMIT          A2
-#define LED_PIN_HEARTBEAT         A0
+#define LED_PIN_ERROR         A6
+#define LED_PIN_RECEIVE       A4
+#define LED_PIN_TRANSMIT      A2
+#define LED_PIN_HEARTBEAT     A0
 
 #define SERIAL_BAUDRATE       115200 // Baud
 #define HEARTBEAT_INTERVAL    500 // ms
